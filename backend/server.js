@@ -1,11 +1,15 @@
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import cors from "cors";
 import dotenv from "dotenv";
+
+import productRoutes from "./routes/productRoutes.js";
+import { sql } from "./config/db.js";
 
 dotenv.config();
 
-const app = express ();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 console.log(PORT);
@@ -15,11 +19,28 @@ app.use(cors());
 app.use(helmet()); //security middleware
 app.use(morgan("dev")); //log request
 
-app.get("/api/products", (req, res) => {
-    console.log(res.getHeaders());
-    res.send("hello ian lami kayo ka");
-})
+app.use("/api/products", productRoutes);
 
-app.listen(PORT, () => {
-    console.log("Server is running " + PORT);
-})
+async function initDB() {
+  try {
+    await sql`
+        CREATE TABLE IF NOT EXISTS products (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(200) NOT NULL,
+            image VARCHAR(200) NOT NULL,
+            price DECIMAL(10, 2) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `;
+
+    console.log("Database is connected");
+  } catch (error) {
+    console.log("Error initDB", error);
+  }
+}
+
+initDB().then(() => {
+    app.listen(PORT, () => {
+        console.log("Server is running at port " + PORT);
+      });
+}) 

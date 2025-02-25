@@ -1,4 +1,4 @@
-import { sql } from "../config/db";
+import { sql } from "../config/db.js";
 
 //CRUD OPERATIONS
 export const getProducts = async (req, res) => {
